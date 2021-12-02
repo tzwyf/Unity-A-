@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -48,7 +48,7 @@ public class AStarMgr
             for(int j=0; j < h; j++)
             {
                 //这里阻挡随机只是暂时展示逻辑使用的，真正项目中的阻挡信息需要从配置文件中读取出来
-                AStarNode node = new AStarNode(i, j, Random.Range(0, 100) < 40 ? E_Node_Type.stop : E_Node_Type.walk);
+                //AStarNode node = new AStarNode(i, j, Random.Range(0, 100) < 40 ? E_Node_Type.stop : E_Node_Type.walk);
                 //if (i == randomW && j == randomH)
                 //{
                 //    node = new AStarNode(i, j, E_Node_Type.stop);
@@ -57,6 +57,16 @@ public class AStarMgr
                 //{
                 //    node = new AStarNode(i, j, E_Node_Type.walk);
                 //}
+                AStarNode node = null;
+                if ((i==3 && (j==1 || j == 2 || j == 3 || j == 4 || j == 5))
+                    || (i == 2 && (j == 1 || j == 5)))
+                {
+                    node = new AStarNode(i, j, E_Node_Type.stop);
+                }
+                else
+                {
+                    node = new AStarNode(i, j, E_Node_Type.walk);
+                }
                 nodes[i, j] = node;
             }
         }
@@ -101,6 +111,24 @@ public class AStarMgr
                         {
                             if (node == nodes[(int)i, (int)j])
                             {
+                                //节点已经在开启列表中，判断是否需要更新父节点
+                                float tempG = 0;
+                                AStarNode currentNode = nodes[(int)(start.x), (int)(start.y)];
+                                if (i == start.x || j == start.y)
+                                {
+                                    tempG = currentNode.g + 1;
+                                }
+                                else
+                                {
+                                    tempG = currentNode.g + 1.4f;
+                                }
+                                if (node.g > tempG)
+                                {
+                                    node.father = currentNode;
+                                    node.g = tempG;
+                                    node.f = node.g + node.h;
+                                }
+
                                 count++;
                             }
                         }
@@ -117,13 +145,13 @@ public class AStarMgr
                             AStarNode node = nodes[(int)i, (int)j];
                             //计算格子的相关信息
                             node.father = nodes[(int)start.x, (int)start.y];
-                            if (i == start.x || j == start.x)
+                            if (i == start.x || j == start.y)
                             {
-                                node.g += 1;
+                                node.g = node.father.g + 1;
                             }
                             else
                             {
-                                node.g += 1.4f;//格子对角线长度
+                                node.g = node.father.g + 1.4f;//格子对角线长度
                             }
                             node.h = Mathf.Abs(i - end.x) + Mathf.Abs(j - end.y);
                             node.f = node.g + node.h;//寻路消耗
